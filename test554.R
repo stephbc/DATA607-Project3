@@ -1,7 +1,7 @@
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
-job_skill<-"https://raw.githubusercontent.com/stormwhale/data-mines/refs/heads/main/job_skills.csv"
+job_skill<-"https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_skills.csv"
 df<-read.csv(job_skill, sep=',')
 nrow(df) #12217
 
@@ -18,8 +18,6 @@ view(df)
 df<- na.omit(if_else(df$job_skills=="", NA, df))
 nrow(df) #12212
 view(df)
-
-
 
 #separate the skills:
 df_mod<- df %>%
@@ -45,10 +43,10 @@ df_mod_long<- df_mod_20 %>%
 #remove 'sets' column:
 df_mod_long<- df_mod_long%>%
   subset(select = c(job_ID, Skills))
-  
+view(df_mod_long)
 #trimming the white spaces:
 df_skills<-data.frame('Skills'=trimws(df_mod_long$Skills))
-
+view(df_skills)
 #Filter out the top 10 wanted skills:
 top_ten<- df_skills %>%
   count(Skills) %>%
@@ -67,22 +65,41 @@ job_posting<- "https://raw.githubusercontent.com/stormwhale/data-mines/refs/head
 df2<-read.csv(job_posting, header=TRUE, sep = ',')
 
 #delete irrelevant columns:
-df2<-df2[-c(3:6)]
+df2<-df2[-c(3:6, 10:11)]
+view(df2)
+
+#normalize location data:
+norm_df2<- df2 %>%
+  filter(search_country =='United States') %>%
+  separate_wider_delim(cols = job_location,
+                       delim=",",
+                       names=c("City", "State_or_Province"),
+                       too_few = 'align_start',
+                       too_many = 'merge')
+
+table(norm_df2$State_or_Province) #Few rows still have other countries.
+# to further refine the data:
+norm_df2<- norm_df2 %>%
+  filter(!grepl("Mexico|India|Italy|Canada",
+               State_or_Province,
+               ignore.case=TRUE))
 
 #Extract date from last_processing column:
-df2$last_process_date<- format(as.Date(df2$last_processed_time), format = "%m-%d-%Y")
-df2$last_processed_time<- format(as.POSIXct(df2$last_processed_time), format="%H:%M:%S")
+norm_df2$last_process_date<- format(as.Date(norm_df2$last_processed_time), format = "%m-%d-%Y")
 
+norm_df2<- norm_df2 %>%
+  select(-c('last_processed_time', 'search_position','search_country'))
 
 #Transform the job_link to job_ID in job_posting table:
-df2$job_link<- id(df2$job_link)
-names(df2)[names(df2)=='job_link']<-'job_ID'
+norm_df2$job_link<- id(norm_df2$job_link)
+names(norm_df2)[names(norm_df2)=='job_link']<-'job_ID'
 
+view(norm_df2)
 
 #Sort the ten top skills desired by associate level DS jobs:
 #Match the job_ID from df_mod_20 to df2:
 #First filter out all associate level jobs:
-df2_ID_Lv<- df2 %>%
+df2_ID_Lv<- norm_df2 %>%
   filter(job_level=='Associate') %>%
   subset(select = c(job_ID, job_level))
 
@@ -104,5 +121,5 @@ ggplot(df_asso_skill_long, aes(x=reorder(skills, n),y=n,fill=n)) +
   coord_flip()+
   labs(x='Experties',
        y='Number of time appeared in job postings',
-       title='Top 10 skills frequently desired by associate level data scientist')+
+       title='Top 10 skills frequently desired by associate level data scientist In the US')+
   theme(legend.position = 'none')
