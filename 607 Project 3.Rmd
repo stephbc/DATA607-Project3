@@ -1,10 +1,25 @@
+---
+title: "The most valued data science skills"
+author: "Brandon Chung, Stephanie Chiang, Ying Fang Lee, Chi Hang(Philip) Cheung"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r load-packages, message=FALSE}
 library(tidyverse)
-library(ggplot2)
 library(dplyr)
+library(ggplot2)
+```
+
+```{r code-chunk-label}
 job_skill<-"https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_skills.csv"
 df<-read.csv(job_skill, sep=',')
 nrow(df) #12217
-
+head(df)
+```
+```{r}
 #create a function to extract the ID numbers from the job_link:
 id<- function(df) {
   stringr::str_extract(df, "(\\d)+$")
@@ -24,14 +39,14 @@ df_mod<- df %>%
   separate_wider_delim(job_skills, delim=',',
                        names_sep = '_',
                        too_few = 'align_start')
+head(df_mod)
+```
 
-view(df_mod)
-
+#Tidying the dataset
+```{r}
 #Select only the first 20 skills listed:
 df_mod_20<- df_mod %>%
   subset(select = c(1:21))
-
-view(df_mod_20)
 
 #pivot_longer to put all skills into one column:
 df_mod_long<- df_mod_20 %>%
@@ -43,7 +58,10 @@ df_mod_long<- df_mod_20 %>%
 #remove 'sets' column:
 df_mod_long<- df_mod_long%>%
   subset(select = c(job_ID, Skills))
-view(df_mod_long)
+head(df_mod_long)
+```
+
+```{r}
 #trimming the white spaces:
 df_skills<-data.frame('Skills'=trimws(df_mod_long$Skills))
 view(df_skills)
@@ -55,19 +73,22 @@ top_ten<- df_skills %>%
 #plotting it in a histogram:
 ggplot(top_ten, aes(x=reorder(Skills, n), y=n, fill=Skills)) +
   geom_bar(stat='identity') +
-  labs(x='Skills', y="", title='Top 10 Data Science Job skills wanted') +
+  labs(x='Skills', y="", title='Top 10 Data Science Job skills wanted in all levels of experience') +
   theme(axis.text.x = element_text(angle = 45, hjust= 1))
-  
-############################################################################################################
+```
+Loading of the second table:
+```{r}
 #Load Job posting table:#Load Job posting table:Skills
-job_posting<- "https://raw.githubusercontent.com/stormwhale/data-mines/refs/heads/main/job_postings.csv"
+job_posting<- "https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_postings.csv"
 
 df2<-read.csv(job_posting, header=TRUE, sep = ',')
+head(df2)
+```
 
+Normalizing and tidying data from the job posting table:
+```{r}
 #delete irrelevant columns:
 df2<-df2[-c(3:6, 10:11)]
-view(df2)
-
 #normalize location data:
 norm_df2<- df2 %>%
   filter(search_country =='United States') %>%
@@ -78,7 +99,7 @@ norm_df2<- df2 %>%
                        too_many = 'merge')
 
 table(norm_df2$State_or_Province) #Few rows still have other countries.
-# to further refine the data:
+# To remove those none US countries:
 norm_df2<- norm_df2 %>%
   filter(!grepl("Mexico|India|Italy|Canada",
                State_or_Province,
@@ -94,11 +115,14 @@ norm_df2<- norm_df2 %>%
 norm_df2$job_link<- id(norm_df2$job_link)
 names(norm_df2)[names(norm_df2)=='job_link']<-'job_ID'
 
-view(norm_df2)
+head(norm_df2)
+```
 
-#Sort the ten top skills desired by associate level DS jobs:
-#Match the job_ID from df_mod_20 to df2:
-#First filter out all associate level jobs:
+To sort the ten top skills desired by associate level DS jobs:
+Match the job_ID from df_mod_20 to df2:
+First filter out all associate level jobs:
+
+```{r}
 df2_ID_Lv<- norm_df2 %>%
   filter(job_level=='Associate') %>%
   subset(select = c(job_ID, job_level))
@@ -113,9 +137,11 @@ df_asso_skill_long<- df_asso_skill %>%
   select(-'sets') %>%
   count(skills) %>%
   slice_max(n, n=10)
-view(df_asso_skill_long)
+head(df_asso_skill)
+```
 
-#To generate the plot:
+To generate the plot:
+```{r}
 ggplot(df_asso_skill_long, aes(x=reorder(skills, n),y=n,fill=n)) +
   geom_bar(stat='identity') +
   coord_flip()+
@@ -123,3 +149,6 @@ ggplot(df_asso_skill_long, aes(x=reorder(skills, n),y=n,fill=n)) +
        y='Number of time appeared in job postings',
        title='Top 10 skills frequently desired by associate level data scientist In the US')+
   theme(legend.position = 'none')
+```
+...
+
