@@ -217,7 +217,6 @@ Skills_Normalized <- job_skills_clean %>%
 
 # Normalized company table with Company_ID assigned
 Company_Normalized <- job_postings_clean %>%
-  filter(!is.na(City),!is.na(State_or_Province),!is.na(Country)) %>% 
   #Removing duplicate rows across company, city, and state_or_province or company per location ID creation
   distinct(company, City, State_or_Province, Country, .keep_all = TRUE) %>%
   mutate(Company_id = row_number()) %>%
@@ -226,9 +225,8 @@ Company_Normalized <- job_postings_clean %>%
 
 # Normalized Job_Listings table
 Job_Listing_Normalized <- job_postings_clean %>%
-  #select(job_ID, job_title, company , job_type, job_level) %>% 
-  # Join the Company table for Company_id
-  left_join(Company_Normalized, join_by(company == Company, City== City, State_or_Province==State_or_Province, Country==Country), relationship = "many-to-many")
+  left_join(Company_Normalized, join_by(company == Company, City== City, State_or_Province==State_or_Province, Country==Country), relationship = "many-to-many") %>% 
+  select(job_ID, job_title, job_type, job_level, Company_id)
   
 # Normalized Listing_Skills table
 Listing_Skills_Normalized <- job_skills_clean %>% 
