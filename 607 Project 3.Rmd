@@ -27,12 +27,12 @@ id<- function(df) {
 #transform and rename job_link to job_ID:
 df$job_link<-id(df$job_link)
 names(df)[names(df)=='job_link'] <-"job_ID"
-view(df)
+#view(df)
 
 #remove empty cells:
 df<- na.omit(if_else(df$job_skills=="", NA, df))
 nrow(df) #12212
-view(df)
+#view(df)
 
 #separate the skills:
 df_mod<- df %>%
@@ -64,7 +64,7 @@ head(df_mod_long)
 ```{r}
 #trimming the white spaces:
 df_skills<-data.frame('Skills'=trimws(df_mod_long$Skills))
-view(df_skills)
+#view(df_skills)
 #Filter out the top 10 wanted skills:
 top_ten<- df_skills %>%
   count(Skills) %>%
