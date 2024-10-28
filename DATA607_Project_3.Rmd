@@ -3,7 +3,6 @@ title: "DATA607_Project_3"
 author: "Brandon Chung, Stephanie Chiang, Ying Fang Lee, Chi Hang(Philip) Cheung"
 date: "2024-10-27"
 output:
-  pdf_document: default
   html_document: default
 ---
 
@@ -13,18 +12,18 @@ output:
 
 #### **Introduction**
 
-This project aims to identify the most valued data science skills by finding the most asked for data science skills in job listings. Our team found a set of data on kaggle called [Data Science Job Postings & Skills](https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills) that provides Data Science job listings from LinkedIn for 2024. This data set includes three csv files:\
+This project aims to identify the most valued data science skills by finding the most requested data science skills in job listings. Our team found a set of data on Kaggle called [Data Science Job Postings & Skills](https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills) that provides Data Science job listings from LinkedIn for 2024. This data set includes three csv files:\
 - job_postings.csv: job_link, job_title, company, job_location, job_level, job_type\
 - job_skills.csv: job_link, job_skills\
 - job_summary.csv: job_link, job_summary
 
-We will focus our analysis with data from job_postings.csv and job_skills.csv.
+We will focus our analysis on data from job_postings.csv and job_skills.csv.
 
-First we will clean up our data from both files. Then we will normalized the data to prepare it to upload as SQL tables. Finally we will analyze the data to find out which is the most asked for data science skill in LinkedIn job listings.
+First, we will clean up our data from both files. Then, we will normalize the data to prepare it to upload as SQL tables. Finally, we will analyze the data to find out which is the most asked for data science skill in LinkedIn job listings.
 
 #### Cleaning up data
 
-In this part of the project we will load the data into R data frame and clean up each observations so that we can put it in a normalized table.
+In this part of the project we will load the data into R data frames and clean up the observations so that we can put them into normalized tables.
 
 ```{r load-packages, message=FALSE}
 library(tidyverse)
@@ -33,24 +32,25 @@ library(tidyverse)
 **Read csv files**
 
 ```{r}
-# Loading job_skills.csv and load into dataframe job_skills
-file<-"https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_skills.csv"
+# Loading job_skills.csv into the dataframe job_skills
+file <-"https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_skills.csv"
 job_skills<-read.csv(file, sep=',')
 
-# Loading job_poastings.csv and load into dataframe job_postings
+# Loading job_postings.csv into the dataframe job_postings
 file <- "https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_postings.csv"
 job_postings <- read.csv(file, sep=',')
-
 ```
 
-**Cleaning up job_skills table** Make sure that the Job_Skills has a job_id column and it's associated skills. Make sure that the skills column does no include any white spaces and does not include any null values.
+**Cleaning up job_skills table**
+Make sure that job_skills has a job_id column and associated skills; and that the skills column does not include any white spaces nor any null values.
 
 ```{r}
-#create a function to extract the ID numbers from the job_link:
-id<- function(df) {
+# Create a function to extract the ID numbers from the job_link:
+id <- function(df) {
   stringr::str_extract(df, "(\\d)+$")
 }
-#transform and rename job_link to job_ID:
+
+# Transform and rename job_link to job_ID:
 job_skills$job_link<-id(job_skills$job_link)
 names(job_skills)[names(job_skills)=='job_link'] <-"job_ID"
 
@@ -60,38 +60,39 @@ job_skills <- job_skills %>%
   slice(1) %>% 
   ungroup()
 
-#separate the skills:
-job_skills_clean<- job_skills %>%
+# Separate the skills:
+job_skills_clean <- job_skills %>%
   separate_wider_delim(job_skills, delim=',',
                        names_sep = '_',
                        too_few = 'align_start')
 
-#pivot_longer to put all skills into one column:
-job_skills_clean<- job_skills_clean %>%
+# Pivot_longer to put all skills into one column:
+job_skills_clean <- job_skills_clean %>%
   pivot_longer(cols = starts_with("job_skills"),
                names_to = 'Sets',
                values_to = 'Skills',
                values_drop_na = TRUE)
 
 # Cleaning up the data in skills
-# trim white space
+# Trim white space
 job_skills_clean$Skills <- trimws(job_skills_clean$Skills)
-# set empty spaces to null
+
+# Set empty spaces to null
 job_skills_clean$Skills <- na_if(job_skills_clean$Skills, "")
-# change all cases to upper case so when we group by case is not a factor
+
+# Change all cases to upper case so when we group by case is not a factor
 job_skills_clean$Skills <- toupper(job_skills_clean$Skills)
 
 # Drop the sets column
 job_skills_clean <- job_skills_clean %>% select(-c(Sets))
 
 head(job_skills_clean)
-
 ```
 
 **Cleaning up the job_postings table**
 
 ```{r}
-# Using the function created before to change job_link to job_id
+# Using the function created above to convert job_link to job_"ID
 job_postings$job_link <- id(job_postings$job_link)
 names(job_postings)[names(job_postings)=='job_link'] <-"job_ID"
 
@@ -103,7 +104,6 @@ job_postings <- job_postings %>%
   group_by(job_ID) %>% 
   slice(1) %>% 
   ungroup()
-
 ```
 
 **Separate job_location**
@@ -147,16 +147,16 @@ job_postings_clean <- job_postings_clean %>%
       SoP = na_if(SoP,""),
       Co = na_if(Co,""))
   
-# Helper Columns to see if city or state contains country
+# Helper columns to see if city or state contains country
 job_postings_clean <- job_postings_clean %>% 
   mutate(
-    # Check if city contains country
+    # check if City contains country
     matchCity = sapply(Ci, function(x) {
       matches <- regmatches(x, regexpr(Countries, x))
       if (length(matches) > 0) matches else NA
         }
       ),
-    # Check if State contains country
+    # check if State contains country
     matchSoP1 = sapply(SoP, function(x) {
       matches <- regmatches(x, regexpr(Countries, x))
       if (length(matches) > 0) matches else NA
@@ -173,7 +173,7 @@ job_postings_clean <- job_postings_clean %>%
 
 job_postings_clean <- job_postings_clean %>%
   mutate(
-# Check the cases for when Country is empty  
+# Check for cases when Country is empty  
     Country = case_when(
       !is.na(Co) ~ Co,
       !is.na(matSoP) ~ matSoP,
@@ -195,10 +195,10 @@ job_postings_clean <- job_postings_clean %>%
   # Remove helper columns
   select(-c(Ci, SoP, Co, matchCity,matchSoP1,matchSoP2,matSoP))
 
-#Extract date from last_processing column:
+# Extract date from last_processing column:
 job_postings_clean$last_process_date<- format(as.Date(job_postings_clean$last_processed_time), format = "%m-%d-%Y") 
 
-job_postings_clean <-  job_postings_clean%>% 
+job_postings_clean <- job_postings_clean%>% 
   select(-c(last_processed_time))
 
 head(job_postings_clean)
@@ -206,9 +206,13 @@ head(job_postings_clean)
 
 #### Normalization
 
-Based on our Normalized Relational Diagram we will normalize our data into 4 tables. We want to organize our tables that represent a company can have multiple locations and multiple job listings (1 to many) and each listing may require multiple skills
+Based on our Normalized Relational Diagram we will normalize our data into 4 tables. We want to organize our tables to represent that a company can have multiple locations and multiple job listings (1 to many) and each listing may require multiple skills.
 
-![**Relation Entity Diagram**](https://github.com/stephbc/DATA607-Project3/blob/Clean_Table/diagram.png?raw=true)
+**Relation Entity Diagram**
+
+```{r, echo=FALSE}
+knitr::include_graphics('diagram.png')
+```
 
 ```{r}
 # Normalized skills table with skill_ID assigned
@@ -221,16 +225,18 @@ Skills_Normalized <- job_skills_clean %>%
 Skills_Normalized$Skills<- gsub("[\"*]","", Skills_Normalized$Skills)
 head(Skills_Normalized)
 ```
+
 ```{r}
 # Normalized company table with Company_ID assigned
 Company_Normalized <- job_postings_clean %>%
-  #Removing duplicate rows across company, city, and state_or_province or company per location ID creation
+  # Removing duplicate rows across company, city, and state_or_province or company per location ID creation
   distinct(company, City, State_or_Province, Country, .keep_all = TRUE) %>%
   mutate(Company_id = row_number()) %>%
   relocate(Company_id, .before = 1) %>% 
   select(Company_id, Company = company, City, State_or_Province, Country)
 head(Company_Normalized)
 ```
+
 ```{r}
 # Normalized Job_Listings table
 Job_Listing_Normalized <- job_postings_clean %>%
@@ -252,7 +258,7 @@ head(Listing_Skills_Normalized)
 #### Analyze
 
 ```{r}
-#Further cleaning of the strings in the table:
+# Further cleaning of the strings in the table:
 job_skills_clean$Skills<- trimws(gsub("SKILLS$", "", job_skills_clean$Skills))
 job_skills_clean$Skills<- gsub("[\"*]","", job_skills_clean$Skills)
 
@@ -268,14 +274,14 @@ ggplot(Top_ten_skills, aes(x=reorder(Skills, n), y = n, fill=n))+
         legend.position='') +
   coord_flip()
 ```
+
 Which 5 states in the US have the most DS job postings:
 ```{r}
-job_num<- job_postings_clean %>%
+job_num <- job_postings_clean %>%
   drop_na(State_or_Province) %>% 
   filter(Country=='United States') %>% 
   count(State_or_Province) %>% 
   slice_max(n, n=5)
-
 
 ggplot(job_num, aes(x=reorder(State_or_Province, n), y=n))+
   geom_bar(stat='identity', aes(fill=n)) +
@@ -284,8 +290,9 @@ ggplot(job_num, aes(x=reorder(State_or_Province, n), y=n))+
        x='States') +
   theme(legend.position = '')
 ```
+
 ```{r}
-asso_skills<- job_postings_clean %>% 
+asso_skills <- job_postings_clean %>% 
   filter(job_level=='Associate') %>% 
   merge(job_skills_clean, 'job_ID') %>% 
   count(Skills) %>% 
@@ -300,13 +307,13 @@ ggplot(asso_skills, aes(x=reorder(Skills, n), y=n))+
 ```
 
 ```{r}
-senior_skills<- job_postings_clean %>% 
+senior_skills <- job_postings_clean %>% 
   filter(job_level=='Mid senior') %>% 
   merge(job_skills_clean, 'job_ID') %>% 
   count(Skills) %>% 
   slice_max(n, n=10)
 
-ggplot(senior_skills, aes(x=reorder(Skills, n), y=n))+
+ggplot(senior_skills, aes(x=reorder(Skills, n), y=n)) +
   geom_bar(stat='identity') +
   coord_flip() +
   labs(title = "Mid Senior level top 10 skills",
