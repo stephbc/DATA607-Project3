@@ -211,7 +211,7 @@ Based on our Normalized Relational Diagram we will normalize our data into 4 tab
 **Relation Entity Diagram**
 
 ```{r, echo=FALSE}
-knitr::include_graphics('diagram.png')
+knitr::include_graphics('diagram_2.png')
 ```
 
 ```{r}
