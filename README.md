@@ -27,4 +27,4 @@ Data Transformations / Normalized Database Model
 - In our normalized database we would ideally have four tables as seen below –
 
 
-![diagram](diagram.png)
+![diagram](diagram_2.png)
