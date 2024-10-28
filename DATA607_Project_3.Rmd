@@ -33,11 +33,11 @@ library(tidyverse)
 
 ```{r}
 # Loading job_skills.csv into the dataframe job_skills
-file <-"https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_skills.csv"
-job_skills<-read.csv(file, sep=',')
+file <-"job_skills.csv"
+job_skills <- read.csv(file, sep=',')
 
 # Loading job_postings.csv into the dataframe job_postings
-file <- "https://raw.githubusercontent.com/stephbc/DATA607-Project3/refs/heads/main/job_postings.csv"
+file <- "job_postings.csv"
 job_postings <- read.csv(file, sep=',')
 ```
 
