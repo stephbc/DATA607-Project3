@@ -2,7 +2,9 @@
 title: "DATA607_Project_3"
 author: "Brandon Chung, Stephanie Chiang, Ying Fang Lee, Chi Hang(Philip) Cheung"
 date: "2024-10-27"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ## Project 3 - Data Science Skills
@@ -282,3 +284,33 @@ ggplot(job_num, aes(x=reorder(State_or_Province, n), y=n))+
        x='States') +
   theme(legend.position = '')
 ```
+```{r}
+asso_skills<- job_postings_clean %>% 
+  filter(job_level=='Associate') %>% 
+  merge(job_skills_clean, 'job_ID') %>% 
+  count(Skills) %>% 
+  slice_max(n, n=10)
+
+ggplot(asso_skills, aes(x=reorder(Skills, n), y=n))+
+  geom_bar(stat='identity') +
+  coord_flip() +
+  labs(title = "Associate level top 10 skills",
+       y='Skill frequency',
+       x='')
+```
+
+```{r}
+senior_skills<- job_postings_clean %>% 
+  filter(job_level=='Mid senior') %>% 
+  merge(job_skills_clean, 'job_ID') %>% 
+  count(Skills) %>% 
+  slice_max(n, n=10)
+
+ggplot(senior_skills, aes(x=reorder(Skills, n), y=n))+
+  geom_bar(stat='identity') +
+  coord_flip() +
+  labs(title = "Mid Senior level top 10 skills",
+       y='Skill frequency',
+       x='')
+```
+
