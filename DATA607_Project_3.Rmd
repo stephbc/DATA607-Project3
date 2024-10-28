@@ -211,7 +211,10 @@ Based on our Normalized Relational Diagram we will normalize our data into 4 tab
 **Relation Entity Diagram**
 
 ```{r, echo=FALSE}
-knitr::include_graphics('diagram_2.png')
+library(showimage)
+url <- "https://github.com/stephbc/DATA607-Project3/blob/main/diagram_2.png?raw=true"
+download.file(url, destfile = "image.png", mode = "wb")
+show_image("image.png")
 ```
 
 ```{r}
