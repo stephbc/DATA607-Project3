@@ -12,14 +12,14 @@ output:
 
 #### **Introduction**
 
-This project aims to identify the most valued data science skills by finding the most requested data science skills in job listings. Our team found a set of data on Kaggle called [Data Science Job Postings & Skills](https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills) that provides Data Science job listings from LinkedIn for 2024. This data set includes three csv files:\
+This project aims to identify the most valued data science skills by finding the most requested data science skills in job listings; this doubles as our motivation, to find out how to best prepare ourselves for furthering our careers or joining in the data science field. Our team found a set of data on Kaggle called [Data Science Job Postings & Skills](https://www.kaggle.com/datasets/asaniczka/data-science-job-postings-and-skills) that provides Data Science job listings from LinkedIn for 2024. This data set includes three csv files:\
 - job_postings.csv: job_link, job_title, company, job_location, job_level, job_type\
 - job_skills.csv: job_link, job_skills\
 - job_summary.csv: job_link, job_summary
 
 We will focus our analysis on data from job_postings.csv and job_skills.csv.
 
-First, we will clean up our data from both files. Then, we will normalize the data to prepare it to upload as SQL tables. Finally, we will analyze the data to find out which is the most asked for data science skill in LinkedIn job listings.
+First, we will clean up our data from both files. Then, we will normalize the data to prepare it. Finally, we will analyze the data to find out which is the most asked for data science skill in LinkedIn job listings.
 
 #### Cleaning up data
 
